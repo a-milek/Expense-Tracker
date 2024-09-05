@@ -1,150 +1,40 @@
 import { useState } from "react";
-import Alert from "./components/Alert";
-import Button from "./components/Button/Button";
-import ListGroup from "./components/ListGroup/ListGroup";
-import Like from "./components/Like";
-import { produce } from "immer";
-import NavBar from "./components/NavBar";
-import Cart from "./components/Cart";
+import { ExpenseForm } from "./expense-tracker/components/ExpenseForm";
+import ExpenseList from "./expense-tracker/components/ExpenseList";
+import { ExpenseFilter } from "./expense-tracker/components/ExpenseFilter";
 
 function App() {
-  const [game, setGame] = useState({
-    id: 1,
-    player: {
-      name: "John",
-    },
-  });
-
-  const handleGameClick = () => {
-    setGame({
-      ...game,
-      player: { ...game.player, name: "Bob" },
-    });
-  };
-
-  //sharing states between components
-  const [cartItems, setCartItems] = useState([
-    "Product1",
-    "Milk",
-    "Egg",
-    "egg2",
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [expenses, setExpenses] = useState([
+    { id: 1, description: "aaa", ammount: 3, category: "Test" },
+    { id: 2, description: "aaa", ammount: 5, category: "Test" },
+    { id: 3, description: "aaa", ammount: 7, category: "Test" },
+    { id: 4, description: "aaa", ammount: 9, category: "Groceries" },
   ]);
 
-  //updating objects in array
-  const [bugs, setBugs] = useState([
-    { id: 1, title: "Bug 1", fixed: false },
-    { id: 2, title: "Bug 2", fixed: false },
-  ]);
-
-  const handleBugClick = () => {
-    //setBugs(bugs.map((bug) => (bug.id === 1 ? { ...bug, fixed: true } : bug))); before immer
-    setBugs(
-      produce((draft) => {
-        const bug = draft.find((bug) => bug.id === 1);
-        if (bug) {
-          bug.fixed = true;
-        }
-      })
-    );
-  };
-
-  //updating an array
-  const [tags, setTags] = useState(["happy", "cheerful"]);
-  const handleArrayCLick = () => {
-    //add
-    setTags([...tags, "exciting"]);
-    //remove
-    setTags(tags.filter((tag) => tag !== "happy"));
-    //update
-    setTags(tags.map((tag) => (tag === "happy" ? "happiness" : tag)));
-  };
-
-  //modifying objects inside objects
-  const [customer, setCustomer] = useState({
-    name: "John",
-    adress: {
-      city: "Warszawa",
-      zipCode: 12345,
-    },
-  });
-
-  const handleCustomerClick = () => {
-    setCustomer({
-      ...customer,
-      adress: { ...customer.adress, zipCode: 13579 },
-    });
-  };
-  //
-
-  const [drink, setDrink] = useState({
-    title: "Mojito",
-    price: 4,
-  });
-
-  const handleDrinkClick = () => {
-    setDrink({ ...drink, price: 6 });
-  };
-
-  const [alertState, setAlertState] = useState(false);
-
-  let items = ["AAA", "BBB", "CCC", "DDD"];
-
-  const handleSelectItem = (item: string) => {
-    console.log(item);
-  };
-
+  const visibleExpenses = selectedCategory
+    ? expenses.filter((e) => e.category === selectedCategory)
+    : expenses;
   return (
-    <div>
-      <div>
-        {alertState && (
-          <Alert onClose={() => setAlertState(false)}>Hello World</Alert>
-        )}
-        <Button color="secondary" onClick={() => setAlertState(true)}>
-          Click me!
-        </Button>
+    <>
+      <h1>Expense Tracker</h1>
+      <div className="mb-5">
+        <ExpenseForm
+          onSubmit={(expense) =>
+            setExpenses([...expenses, { ...expense, id: expenses.length + 1 }])
+          }
+        ></ExpenseForm>
       </div>
-      <hr />
-      <div>
-        <Like onClick={() => console.log("like clicked")}></Like>
+      <div className="mb-3">
+        <ExpenseFilter
+          onSelectCategory={(category) => setSelectedCategory(category)}
+        ></ExpenseFilter>
       </div>
-      <hr />
-      <div>
-        <ListGroup
-          items={items}
-          heading="Random"
-          onSelectItem={handleSelectItem}
-        />
-      </div>
-      <hr />
-      <div>
-        {drink.price}
-        <Button color="primary" onClick={() => handleDrinkClick()}>
-          Drink Button
-        </Button>
-      </div>
-      <hr />
-      <div>
-        {bugs.map((bug) => (
-          <p key={bug.id}>
-            {bug.title} {bug.fixed ? "Fixed" : "New"}
-          </p>
-        ))}
-        <Button color="primary" onClick={() => handleBugClick()}>
-          Bug Button
-        </Button>
-      </div>
-      <hr />
-      <div>
-        <NavBar cartItemsCount={cartItems.length} />
-        <Cart cartItems={cartItems} onClear={() => setCartItems([])} />
-      </div>
-      <hr />
-
-      <div>{game.player.name}</div>
-      <Button color="danger" onClick={() => handleGameClick()}>
-        AAAAAAA
-      </Button>
-    </div>
+      <ExpenseList
+        expenses={visibleExpenses}
+        onDelete={(id) => setExpenses(expenses.filter((e) => e.id !== id))}
+      ></ExpenseList>
+    </>
   );
 }
 export default App;
